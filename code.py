@@ -19,35 +19,24 @@ urls = (
 
 class google:
     def GET(self):
-        data = urllib2.urlopen("http://www.google.com").read()
+        data = open("./Google.html", "r").read()
         return data
 
 class search:
     def GET(self):
-	query = urllib.urlencode({'q': web.input().q})
-	url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s' % query
-	print url
-	head = '''
-		<!DOCTYPE html>
-<html>
-<head>
-<title>Page Title</title>
-</head>
-<body>
-	'''
-	tail = '''
-</body>
-</html>
-	'''
-	data = urllib2.urlopen(url).read()
-	results = json.loads(data)
-	data = results['responseData']
-	ret = 'Total results: ' + data['cursor']['estimatedResultCount'] + "<br>"
-	hits = data['results']
-	ret += 'Top %d hits:' % len(hits) + "<br>"
-	for h in hits: ret += "&nbsp"*4 +' <a href="' + h['url'] + '">' +  h['url'] + '</a>' + "<br>"
-	ret += 'For more results, see <a href="%s"> %s </a>' % (data['cursor']['moreResultsUrl'], data['cursor']['moreResultsUrl'])
-	return head + ret + tail
+	    query = urllib.urlencode({'q': web.input().q})
+	    url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s' % query
+	    print url
+	    head = "<!DOCTYPE html><html><head><title>Search Result</title></head><body>"
+	    data = urllib2.urlopen(url).read()
+	    results = json.loads(data)
+	    data = results['responseData']
+	    ret = 'Total results: ' + data['cursor']['estimatedResultCount'] + "<br>"
+	    hits = data['results']
+	    ret += 'Top %d hits:' % len(hits) + "<br>"
+	    for h in hits: ret += "&nbsp"*4 +' <a href="' + h['url'] + '">' +  h['url'] + '</a>' + "<br>"
+	    ret += 'For more results, see <a href="%s"> %s </a>' % (data['cursor']['moreResultsUrl'], data['cursor']['moreResultsUrl'])
+	    return head + ret + "</body></html>"
 
 class index:
     def GET(self, name):
