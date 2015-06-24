@@ -4,24 +4,57 @@ __author__ = 'haifwu@ebay.com'
 import sys
 import web
 import urllib2
+import urllib
+import json
 
 reload(sys)
 sys.setdefaultencoding('UTF-8')
 
 urls = (
     '/google', 'google',
+    '/search', 'search',
     '/(.*)', 'index'
 )
 
+
 class google:
     def GET(self):
-        data = urllib2.urlopen("http://www.baidu.com/s?wd=beauti&rsv_spt=1&issp=1&f=8&rsv_bp=0&rsv_idx=2&ie=utf-8&tn=baiduhome_pg&rsv_enter=1&rsv_sug3=7&rsv_sug1=7&rsv_pq=da90cf1600019ea5&rsv_t=c115qqtafaTVz4xy3js5pRv%2BQy5ZBKSDz0%2BSMvBhbQE4dE39ClQFU8q2TqtKKC8j41sV&rsv_sug2=0&inputT=2375&rsv_sug4=4225").read()
-        print data
+        data = urllib2.urlopen("http://www.google.com").read()
         return data
+
+class search:
+    def GET(self):
+	query = urllib.urlencode({'q': web.input().q})
+	url = 'http://ajax.googleapis.com/ajax/services/search/web?v=1.0&%s' % query
+	print url
+	head = '''
+		<!DOCTYPE html>
+<html>
+<head>
+<title>Page Title</title>
+</head>
+<body>
+	'''
+	tail = '''
+</body>
+</html>
+	'''
+	data = urllib2.urlopen(url).read()
+	results = json.loads(data)
+	data = results['responseData']
+	ret = 'Total results: ' + data['cursor']['estimatedResultCount'] + "<br>"
+	hits = data['results']
+	ret += 'Top %d hits:' % len(hits) + "<br>"
+	for h in hits: ret += "&nbsp"*4 +' <a href="' + h['url'] + '">' +  h['url'] + '</a>' + "<br>"
+	ret += 'For more results, see <a href="%s"> %s </a>' % (data['cursor']['moreResultsUrl'], data['cursor']['moreResultsUrl'])
+	return head + ret + tail
 
 class index:
     def GET(self, name):
-        return 'Hello world!' + name
+        url = "https://www.google.com/" + name
+	print "-"*10 + url 
+	data = urllib2.urlopen(url).read()
+	return data 
 
 if __name__ == "__main__":
     app = web.application(urls, globals())
